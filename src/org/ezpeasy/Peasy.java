@@ -113,54 +113,53 @@ public class Peasy {
 
     }
 
-    private String invoke(Request request, Response response, Method method, Object parent) {
-        try {
+    private String invoke(Request request, Response response, Method method, Object parent) throws Exception {
 
-            if (method.getParameterCount() == 0) {
-                return parseReturnValue(method, method.invoke(parent).toString());
-            }
 
-            final Set<String> queryParams = request.queryParams();
+        response.type("application/json");
 
-            final Parameter[] parameters = method.getParameters();
-
-            int paramCount = 0;
-
-            for (Parameter parameter : parameters) {
-
-                if (parameter.getType() == Request.class || parameter.getType() == Response.class) {
-                    continue;
-                }
-
-                paramCount++;
-            }
-
-            if (queryParams.size() < paramCount) {
-                throw new IllegalArgumentException("Param requiered not present " + queryParams.size() + " vs " + paramCount);
-            }
-
-            final List<Object> result = new ArrayList<>();
-
-            for (Parameter parameter : parameters) {
-
-                if (parameter.getType() == Request.class) {
-                    result.add(request);
-                } else if (parameter.getType() == Response.class) {
-                    result.add(response);
-                } else if (isNotJSON(parameter)) {
-                    result.add(parse(parameter, request.queryParams(parameter.getName())));
-                } else {
-                    result.add(gson.fromJson(request.body(), parameter.getType()));
-                }
-            }
-
-            return parseReturnValue(method, method.invoke(parent, result.toArray()));
-
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
+        if (method.getParameterCount() == 0) {
+            return parseReturnValue(method, method.invoke(parent).toString());
         }
 
-        return null;
+        final Set<String> queryParams = request.queryParams();
+
+        final Parameter[] parameters = method.getParameters();
+
+        int paramCount = 0;
+
+        for (Parameter parameter : parameters) {
+
+            if (parameter.getType() == Request.class || parameter.getType() == Response.class) {
+                continue;
+            }
+
+            if (parameter.getType() == String.class || parameter.getType().isPrimitive()) {
+                paramCount++;
+            }
+        }
+
+        if (queryParams.size() < paramCount) {
+            throw new IllegalArgumentException("Param requiered not present " + queryParams.size() + " vs " + paramCount);
+        }
+
+        final List<Object> result = new ArrayList<>();
+
+        for (Parameter parameter : parameters) {
+
+            if (parameter.getType() == Request.class) {
+                result.add(request);
+            } else if (parameter.getType() == Response.class) {
+                result.add(response);
+            } else if (isNotJSON(parameter)) {
+                result.add(parse(parameter, request.queryParams(parameter.getName())));
+            } else {
+                result.add(gson.fromJson(request.body(), parameter.getType()));
+            }
+        }
+
+        return parseReturnValue(method, method.invoke(parent, result.toArray()));
+
     }
 
     private String parseReturnValue(Method method, Object value) {

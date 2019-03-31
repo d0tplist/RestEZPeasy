@@ -13,6 +13,10 @@ public class SampleWS {
         return new JSONExample(name, age);
     }
 
+    public JSONExample jsonExample(JSONExample example) {
+        return example;
+    }
+
     private String notpublished(String value) {
         return value;
     }
