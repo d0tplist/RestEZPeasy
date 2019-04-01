@@ -46,10 +46,15 @@ public class Peasy {
     }
 
     public void publish(Class clazz) {
+
+        if(clazz == null){
+            return;
+        }
+
         List<Method> methods = getMethods(clazz);
 
         if (methods.isEmpty()) {
-            System.out.println("Without methods!");
+            System.out.println(clazz.getName() + "doesn't have methods!");
             return;
         }
 

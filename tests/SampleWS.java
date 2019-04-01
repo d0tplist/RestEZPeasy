@@ -1,3 +1,4 @@
+import spark.Response;
 
 public class SampleWS {
 
@@ -21,7 +22,8 @@ public class SampleWS {
         return value;
     }
 
-    protected String notevenpublished(String value) {
+    protected String notevenpublished(String value, Response response) {
+        response.redirect("http://www.anotherurl.peasy/");
         return value;
     }
 
